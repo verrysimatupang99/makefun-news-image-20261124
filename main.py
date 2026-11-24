@@ -1,27 +1,24 @@
-#!/usr/bin/env python3
-"""News-image entry: copy the poster to /output/entry.png.
+"""Copy the poster for Tuesday 24 November 2026 to the output folder.
 
-The poster (entry.png) sums up Tuesday 24 November 2026 in one image:
-the US blacklists Megaspeed, the chip firm at the heart of the Nvidia
-spy scandal; Zelenskyy warns Russia is preparing new strikes on
-Ukraine; Moscow threatens Estonia over its border closure; the Pentagon
-rebukes Canada over defence spending and its F-35 review; plus
-Armenia's new constitution, Denmark's school phone ban, fighting near
-the Congo Ebola outbreak and 14 nations backing the ICJ Rohingya
-ruling. The date is named in the masthead.
+The poster ships inside this repository, so the copy is byte for byte
+the same on every run: no network, no randomness, no clock involved."""
+from os import environ
+from pathlib import Path
 
-Deterministic: the same bytes are written on every run, no network,
-Python 3.13 standard library only.
-"""
-import os
-import shutil
+POSTER_NAME = "entry.png"
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
 
-os.makedirs(OUT, exist_ok=True)
-src = os.path.join(HERE, "entry.png")
-dst = os.path.join(OUT, "entry.png")
-shutil.copyfile(src, dst)
-# Fail loudly instead of handing the grader a truncated copy.
-assert os.path.getsize(dst) == os.path.getsize(src), "entry.png copy incomplete"
+def main() -> None:
+    here = Path(__file__).resolve().parent
+    poster = here / POSTER_NAME
+    out_dir = Path(environ.get("MAKEFUN_OUTPUT_DIR", "/output"))
+    out_dir.mkdir(parents=True, exist_ok=True)
+    target = out_dir / POSTER_NAME
+    target.write_bytes(poster.read_bytes())
+    if target.stat().st_size != poster.stat().st_size:
+        raise SystemExit(
+            f"poster copy came out short: {target.stat().st_size} of {poster.stat().st_size} bytes"
+        )
+
+
+main()
